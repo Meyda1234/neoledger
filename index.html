@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeoLedger - Rekapan Keuangan Harian Jeno Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        heading: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        neo: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            200: '#bae0fd',
+                            400: '#38bdf8',
+                            500: '#0284c7',
+                            600: '#0265d2',
+                            800: '#072d68',
+                            900: '#0a192f',
+                            950: '#030712',
+                            electric: '#00f0ff',
+                            purple: '#6366f1'
+                        }
+                    }
+                }
+            }
+        }
+
+        // Daftar Lagu NCT Dream & Logika Acak
+const nctSongs = [
+    { title: "Broken Melodies", album: "ISTJ - The 3rd Album", link: "https://open.spotify.com/search/Broken%20Melodies%20NCT%20DREAM" },
+    { title: "Beatbox", album: "Beatbox - Repackage Album", link: "https://open.spotify.com/search/Beatbox%20NCT%20DREAM" },
+    { title: "Graduation", album: "Candy - Winter Special", link: "https://open.spotify.com/search/Graduation%20NCT%20DREAM" },
+    { title: "Hello Future", album: "Hello Future - Repackage", link: "https://open.spotify.com/search/Hello%20Future%20NCT%20DREAM" },
+    { title: "Smooth Sailin'", album: "ISTJ - The 3rd Album", link: "https://open.spotify.com/search/Smooth%20Sailin%20NCT%20DREAM" },
+    { title: "Life Is Still Going On", album: "Hot Sauce Album", link: "https://open.spotify.com/search/Life%20Is%20Still%20Going%20On%20NCT%20DREAM" }
+];
+
+function getRandomSong() {
+    const song = nctSongs[Math.floor(Math.random() * nctSongs.length)];
+    document.getElementById('songTitle').innerText = song.title;
+    document.getElementById('albumTitle').innerText = song.album;
+    document.getElementById('spotifyBtn').href = song.link;
+}
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #060b13;
+            color: #f1f5f9;
+        }
+        .neo-glass {
+            background: rgba(10, 25, 47, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+        .neo-glass-card {
+            background: rgba(15, 30, 55, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(56, 189, 248, 0.12);
+        }
+        .neo-glow {
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.15);
+        }
+        .neo-glow-hover:hover {
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
+            border-color: rgba(56, 189, 248, 0.4);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(10, 25, 47, 0.5);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(56, 189, 248, 0.3);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(56, 189, 248, 0.6);
+        }
+
+        /* Styling Widget Musik */
+.music-widget {
+    background: rgba(10, 15, 29, 0.6);
+    border: 1px solid rgba(87, 227, 44, 0.3);
+    border-radius: 18px;
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.music-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.music-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--neo-green, #57e32c);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.music-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.music-icon {
+    width: 42px;
+    height: 42px;
+    background: rgba(87, 227, 44, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--neo-green, #57e32c);
+    font-size: 1.2rem;
+}
+
+.music-info h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.music-info p {
+    font-size: 0.8rem;
+    color: var(--text-muted, #94a3b8);
+}
+
+.music-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.btn-music {
+    flex: 1;
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-spotify {
+    background: #1db954;
+    color: #000;
+}
+
+.btn-shuffle {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main, #ffffff);
+    border: 1px solid var(--card-border, rgba(56, 189, 248, 0.2));
+}
+
+.btn-shuffle:hover {
+    border-color: var(--neo-green, #57e32c);
+    color: var(--neo-green, #57e32c);
+}
+    </style>
+</head>
+<body class="min-h-screen flex flex-col custom-scrollbar relative overflow-x-hidden selection:bg-sky-500 selection:text-white">
+
+    <div class="fixed top-0 left-1/4 w-96 h-96 bg-sky-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="fixed bottom-10 right-10 w-96 h-96 bg-indigo-600/10 rounded-full blur-[130px] pointer-events-none"></div>
+
+    <header class="sticky top-0 z-40 neo-glass border-b border-sky-500/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl neo-glow">
+                    <i class="fa-solid fa-bolt text-neo-electric"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-heading font-bold text-lg tracking-wider text-white">NEO<span class="text-sky-400">LEDGER</span></h1>
+                        <span class="px-2 py-0.5 text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-400/30 rounded-full">JENO VER.</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Catatan Pengeluaran Harian Czennies</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="exportData()" class="px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 text-xs font-semibold rounded-xl transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-download text-neo-electric"></i>
+                    <span class="hidden sm:inline">Unduh CSV</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <div class="neo-glass rounded-3xl p-6 relative overflow-hidden neo-glow border border-sky-500/30">
+            <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-gradient-to-br from-sky-500/20 to-blue-600/0 rounded-full blur-2xl pointer-events-none"></div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center relative z-10">
+                <!-- Foto Jeno + Tombol Upload -->
+                <div class="md:col-span-4 lg:col-span-3 flex flex-col items-center justify-center gap-3">
+                    <div class="relative group">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-sky-400 to-indigo-500 rounded-2xl blur opacity-60 group-hover:opacity-90 transition duration-500"></div>
+                        <div class="relative w-44 h-44 sm:w-48 sm:h-48 rounded-2xl overflow-hidden border-2 border-sky-400/40 bg-slate-900 shadow-2xl flex items-center justify-center">
+                            <img id="jenoImage" src="watermarked_img_12987302516998898756.jpg" 
+                                 onerror="this.src='https://placehold.co/400x400/0a192f/38bdf8?text=Lee+Jeno+NCT'" 
+                                 alt="Lee Jeno NCT" 
+                                 class="w-full h-full object-cover object-top hover:scale-105 transition duration-500">
+                            <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent p-2 text-center">
+                                <span class="text-[11px] font-extrabold tracking-widest text-sky-300 uppercase">LEE JENO</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden Input File -->
+                    <input type="file" id="jenoPhotoInput" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+                    
+                    <!-- Tombol Pilih Foto Sendiri -->
+                    <button onclick="document.getElementById('jenoPhotoInput').click()" 
+                            class="px-3 py-1.5 bg-slate-800/90 hover:bg-sky-500/20 text-sky-300 border border-sky-400/30 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 shadow-lg hover:border-sky-400">
+                        <i class="fa-solid fa-camera text-neo-electric"></i>
+                        <span>Ganti Foto Jeno</span>
+                    </button>
+                </div>
+
+                <!-- Quotes & Pesan dari Jeno -->
+                <div class="md:col-span-8 lg:col-span-9 space-y-3 text-center md:text-left">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-400/30 text-sky-300 text-xs font-semibold">
+                        <i class="fa-solid fa-crown text-amber-400"></i>
+                        <span>Manager Keuangan NCTzen</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-heading font-bold text-white tracking-wide">
+                        "Semangat tabungannya, <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-neo-electric to-indigo-400">Czennies!💙</span>"
+                    </h2>
+                    <p class="text-slate-300 text-xs sm:text-sm max-w-2xl leading-relaxed">
+                        Ingat kata Jeno: Tetap catat pengeluaran harian biar nggak bocor halus. Uangnya ditabung buat jajan boba, beli album, dan ketemu NCT DREAM di konser nanti ya!
+                    </p>
+                    <div class="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-2">
+                        <span class="px-2.5 py-1 bg-slate-800/80 rounded-lg text-[11px] text-slate-300 border border-slate-700">
+                            <i class="fa-solid fa-music text-sky-400 mr-1"></i> #NCTDREAM
+                        </span>
+                        <span class="px-2.5 py-1 bg-slate-800/80 rounded-lg text-[11px] text-slate-300 border border-slate-700">
+                            <i class="fa-solid fa-gem text-indigo-400 mr-1"></i> Concert Fund
+                        </span>
+                        <span class="px-2.5 py-1 bg-slate-800/80 rounded-lg text-[11px] text-slate-300 border border-slate-700">
+                            <i class="fa-solid fa-paw text-sky-300 mr-1"></i> Samoyed Approved
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Widget Rekomendasi Musik NCT Dream -->
+<div class="music-widget">
+    <div class="music-header">
+        <div class="music-title"><i class="fa-solid fa-music"></i> NCT Dream Track</div>
+        <span style="font-size: 0.7rem; color: var(--text-muted);">Daily Song</span>
+    </div>
+    <div class="music-card">
+        <div class="music-icon"><i class="fa-solid fa-compact-disc"></i></div>
+        <div class="music-info">
+            <h4 id="songTitle">Broken Melodies</h4>
+            <p id="albumTitle">NCT DREAM - ISTJ Album</p>
+        </div>
+    </div>
+    <div class="music-actions">
+        <button class="btn-music btn-shuffle" onclick="getRandomSong()">
+            <i class="fa-solid fa-shuffle"></i> Acak Lagu
+        </button>
+        <a id="spotifyBtn" href="https://open.spotify.com/search/Broken%20Melodies%20NCT%20DREAM" target="_blank" class="btn-music btn-spotify">
+            <i class="fa-brands fa-spotify"></i> Spotify
+        </a>
+    </div>
+</div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Total Saldo (Net Balance) -->
+            <div class="neo-glass-card rounded-2xl p-5 relative overflow-hidden neo-glow-hover transition-all border-l-4 border-l-sky-400">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-semibold text-sky-300 uppercase tracking-wider">Sisa Saldo (Net Balance)</span>
+                    <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-300 flex items-center justify-center">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                </div>
+                <h3 id="netBalance" class="text-2xl sm:text-3xl font-heading font-bold text-white tracking-tight">Rp 434.000</h3>
+                <p class="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
+                    <i class="fa-solid fa-shield-halved text-sky-400"></i> Total Dompet & Tabungan
+                </p>
+            </div>
+
+            <!-- Total Pemasukan -->
+            <div class="neo-glass-card rounded-2xl p-5 relative overflow-hidden neo-glow-hover transition-all border-l-4 border-l-emerald-400">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-semibold text-emerald-300 uppercase tracking-wider">Total Pemasukan</span>
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center">
+                        <i class="fa-solid fa-arrow-down-left"></i>
+                    </div>
+                </div>
+                <h3 id="totalIncome" class="text-2xl sm:text-3xl font-heading font-bold text-emerald-400 tracking-tight">Rp 0</h3>
+                <p class="text-[11px] text-slate-400 mt-2">Uang Saku, Gaji & Transferan</p>
+            </div>
+
+            <!-- Total Pengeluaran -->
+            <div class="neo-glass-card rounded-2xl p-5 relative overflow-hidden neo-glow-hover transition-all border-l-4 border-l-rose-400">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-semibold text-rose-300 uppercase tracking-wider">Total Pengeluaran</span>
+                    <div class="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-300 flex items-center justify-center">
+                        <i class="fa-solid fa-arrow-up-right"></i>
+                    </div>
+                </div>
+                <h3 id="totalExpense" class="text-2xl sm:text-3xl font-heading font-bold text-rose-400 tracking-tight">Rp 0</h3>
+                <p class="text-[11px] text-slate-400 mt-2">Jajan, Merch, Coffee & Transport</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Form Tambah Catatan -->
+            <div class="lg:col-span-5 neo-glass-card rounded-2xl p-5 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="font-heading font-bold text-base text-white flex items-center gap-2">
+                        <i class="fa-solid fa-plus-circle text-sky-400"></i> Tambah Transaksi
+                    </h3>
+                    <span class="text-[11px] text-sky-300/70 font-mono">INPUT_DATA</span>
+                </div>
+
+                <form id="transForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                    <!-- Jenis Transaksi -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Jenis Transaksi</label>
+                        <div class="grid grid-cols-2 gap-2 p-1 bg-slate-950/80 rounded-xl border border-slate-800">
+                            <button type="button" id="btnTypeExpense" onclick="setTransType('expense')" 
+                                    class="py-2 text-xs font-bold rounded-lg transition-all bg-rose-500 text-white shadow-md">
+                                <i class="fa-solid fa-minus-circle mr-1"></i> Pengeluaran
+                            </button>
+                            <button type="button" id="btnTypeIncome" onclick="setTransType('income')" 
+                                    class="py-2 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-white">
+                                <i class="fa-solid fa-plus-circle mr-1"></i> Pemasukan
+                            </button>
+                        </div>
+                        <input type="hidden" id="transType" value="expense">
+                    </div>
+
+                    <!-- Nominal Uang -->
+                    <div>
+                        <label for="amount" class="block text-xs font-medium text-slate-300 mb-1.5">Nominal Uang (Rp)</label>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sky-400 font-bold text-xs">Rp</span>
+                            <input type="number" id="amount" placeholder="Contoh: 25000" required min="1"
+                                class="w-full pl-10 pr-4 py-2.5 bg-slate-900/90 border border-slate-700/70 rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition-all">
+                        </div>
+                    </div>
+
+                    <!-- Kategori -->
+                    <div>
+                        <label for="category" class="block text-xs font-medium text-slate-300 mb-1.5">Kategori</label>
+                        <select id="category" required 
+                            class="w-full px-3 py-2.5 bg-slate-900/90 border border-slate-700/70 rounded-xl text-sm font-medium text-white focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition-all">
+                        </select>
+                    </div>
+
+                    <!-- Tanggal -->
+                    <div>
+                        <label for="date" class="block text-xs font-medium text-slate-300 mb-1.5">Tanggal</label>
+                        <input type="date" id="date" required 
+                            class="w-full px-3 py-2.5 bg-slate-900/90 border border-slate-700/70 rounded-xl text-sm font-medium text-white focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition-all">
+                    </div>
+
+                    <!-- Catatan / Deskripsi -->
+                    <div>
+                        <label for="note" class="block text-xs font-medium text-slate-300 mb-1.5">Catatan / Keterangan</label>
+                        <input type="text" id="note" placeholder="Contoh: Boba Milk Tea / Poster Jeno" required
+                            class="w-full px-3 py-2.5 bg-slate-900/90 border border-slate-700/70 rounded-xl text-sm font-medium text-white focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition-all">
+                    </div>
+
+                    <button type="submit" 
+                        class="w-full py-3 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 active:scale-[0.99] text-white font-bold text-sm rounded-xl transition-all neo-glow flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-sparkles text-neo-electric"></i> Simpan Catatan
+                    </button>
+                </form>
+            </div>
+
+            <!-- Grafik Analisis Visual -->
+            <div class="lg:col-span-7 neo-glass-card rounded-2xl p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                        <h3 class="font-heading font-bold text-base text-white flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-sky-400"></i> Diagram Pengeluaran
+                        </h3>
+                        <span class="text-xs text-sky-300/70 font-mono">ANALYTICS</span>
+                    </div>
+
+                    <div class="relative h-64 sm:h-72 w-full flex items-center justify-center">
+                        <canvas id="neoChart"></canvas>
+                        <div id="noChartData" class="hidden absolute inset-0 flex flex-col items-center justify-center text-slate-500">
+                            <i class="fa-solid fa-chart-simple text-4xl mb-2 text-slate-700"></i>
+                            <p class="text-xs font-medium">Belum ada pengeluaran dicatat</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                    <span><i class="fa-solid fa-circle text-[8px] text-sky-400 mr-1"></i> Visualisasi Kategori</span>
+                    <span class="text-sky-300">Jeno Analytics</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="neo-glass-card rounded-2xl p-5 space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div>
+                    <h3 class="font-heading font-bold text-base text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-sky-400"></i> Riwayat Transaksi
+                    </h3>
+                    <p class="text-xs text-slate-400">Pantau semua aliran uang kamu di sini</p>
+                </div>
+
+                <!-- Filter & Pencarian -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="relative min-w-[140px] sm:min-w-[180px]">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-500"></i>
+                        <input type="text" id="searchInput" oninput="render()" placeholder="Cari catatan..." 
+                            class="w-full pl-8 pr-3 py-1.5 bg-slate-900 border border-slate-700/70 rounded-xl text-xs text-white focus:outline-none focus:border-sky-400">
+                    </div>
+
+                    <select id="filterCategory" onchange="render()" 
+                        class="px-3 py-1.5 bg-slate-900 border border-slate-700/70 rounded-xl text-xs font-medium text-slate-300 focus:outline-none focus:border-sky-400">
+                        <option value="ALL">Semua Kategori</option>
+                    </select>
+
+                    <select id="filterType" onchange="render()" 
+                        class="px-3 py-1.5 bg-slate-900 border border-slate-700/70 rounded-xl text-xs font-medium text-slate-300 focus:outline-none focus:border-sky-400">
+                        <option value="ALL">Semua Jenis</option>
+                        <option value="expense">Pengeluaran</option>
+                        <option value="income">Pemasukan</option>
+                    </select>
+
+                    <button onclick="resetFilters()" class="p-2 text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-700/70 rounded-xl transition-all" title="Reset Filter">
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabel Transaksi -->
+            <div class="overflow-x-auto max-h-96 overflow-y-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 bg-slate-950 text-sky-300/80 text-[11px] font-mono uppercase tracking-wider z-10 border-b border-slate-800">
+                        <tr>
+                            <th class="py-3 px-4">Tanggal</th>
+                            <th class="py-3 px-4">Kategori</th>
+                            <th class="py-3 px-4">Keterangan</th>
+                            <th class="py-3 px-4 text-right">Nominal</th>
+                            <th class="py-3 px-4 text-center">Hapus</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transTableBody" class="divide-y divide-slate-800/60 text-xs">
+                        <!-- Transaksi dimasukkan via JS -->
+                    </tbody>
+                </table>
+
+                <div id="emptyTableState" class="hidden py-12 text-center text-slate-500">
+                    <i class="fa-solid fa-ghost text-4xl mb-3 text-slate-700"></i>
+                    <p class="text-sm font-semibold text-slate-400">Tidak ada riwayat ditemukan</p>
+                    <p class="text-xs text-slate-600 mt-1">Coba ubah kata kunci pencarian atau filter.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-auto py-4 text-center border-t border-slate-900 text-xs text-slate-600">
+        <p>NeoLedger — Dedicated for NCTzen & Lee Jeno Fans. Tetap hemat & produktif! 💙</p>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+
+    <script>
+        // Kategori Indonesia & K-Pop
+        const CATEGORIES = {
+            expense: [
+                { id: 'Merch & Konser', icon: 'fa-ticket', color: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' },
+                { id: 'Boba & Kopi', icon: 'fa-mug-hot', color: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
+                { id: 'Makan Harian', icon: 'fa-utensils', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
+                { id: 'Baju & Shopping', icon: 'fa-bag-shopping', color: 'bg-sky-500/20 text-sky-300 border-sky-500/30' },
+                { id: 'Transportasi', icon: 'fa-car-side', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30' },
+                { id: 'Lain-lain', icon: 'fa-ellipsis', color: 'bg-slate-500/20 text-slate-300 border-slate-500/30' }
+            ],
+            income: [
+                { id: 'Uang Saku', icon: 'fa-hand-holding-dollar', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
+                { id: 'Gaji / Freelance', icon: 'fa-briefcase', color: 'bg-teal-500/20 text-teal-300 border-teal-500/30' },
+                { id: 'Hadiah / Cashback', icon: 'fa-gift', color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' },
+                { id: 'Lainnya', icon: 'fa-wallet', color: 'bg-slate-500/20 text-slate-300 border-slate-500/30' }
+            ]
+        };
+
+        // Persistent State - Default Saldo persis Rp 434.000
+        let transactions = JSON.parse(localStorage.getItem('neo_ledger_data')) || [
+            { id: 101, type: 'income', amount: 434000, category: 'Uang Saku', date: new Date().toISOString().split('T')[0], note: 'Saldo Awal Dompet' }
+        ];
+
+        let neoChart = null;
+
+        // Load halaman
+        window.onload = function() {
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            
+            // Restore foto kustom jika ada
+            const savedPhoto = localStorage.getItem('neo_jeno_photo');
+            if (savedPhoto) {
+                document.getElementById('jenoImage').src = savedPhoto;
+            }
+
+            updateCategoryOptions();
+            populateFilterCategories();
+            render();
+        };
+
+        function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageData = e.target.result;
+                    document.getElementById('jenoImage').src = imageData;
+                    localStorage.setItem('neo_jeno_photo', imageData);
+                    showToast('Foto Jeno berhasil diperbarui!', 'success');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Toggle Pemasukan vs Pengeluaran
+        function setTransType(type) {
+            document.getElementById('transType').value = type;
+            const btnExp = document.getElementById('btnTypeExpense');
+            const btnInc = document.getElementById('btnTypeIncome');
+
+            if (type === 'expense') {
+                btnExp.className = "py-2 text-xs font-bold rounded-lg transition-all bg-rose-500 text-white shadow-md";
+                btnInc.className = "py-2 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-white";
+            } else {
+                btnInc.className = "py-2 text-xs font-bold rounded-lg transition-all bg-emerald-500 text-white shadow-md";
+                btnExp.className = "py-2 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-white";
+            }
+            updateCategoryOptions();
+        }
+
+        function updateCategoryOptions() {
+            const type = document.getElementById('transType').value;
+            const select = document.getElementById('category');
+            select.innerHTML = '';
+
+            CATEGORIES[type].forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat.id;
+                opt.textContent = cat.id;
+                select.appendChild(opt);
+            });
+        }
+
+        function populateFilterCategories() {
+            const filterCat = document.getElementById('filterCategory');
+            const allCats = [...CATEGORIES.expense, ...CATEGORIES.income];
+            const uniqueCats = Array.from(new Set(allCats.map(c => c.id)));
+
+            uniqueCats.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                filterCat.appendChild(opt);
+            });
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const type = document.getElementById('transType').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const category = document.getElementById('category').value;
+            const date = document.getElementById('date').value;
+            const note = document.getElementById('note').value.trim();
+
+            if (!amount || amount <= 0) {
+                showToast('Masukkan nominal uang yang valid!', 'error');
+                return;
+            }
+
+            const item = {
+                id: Date.now(),
+                type,
+                amount,
+                category,
+                date,
+                note
+            };
+
+            transactions.unshift(item);
+            saveData();
+            render();
+
+            document.getElementById('amount').value = '';
+            document.getElementById('note').value = '';
+
+            showToast('Transaksi berhasil dicatat di NeoLedger!', 'success');
+        }
+
+        function deleteTrans(id) {
+            transactions = transactions.filter(t => t.id !== id);
+            saveData();
+            render();
+            showToast('Catatan berhasil dihapus', 'info');
+        }
+
+        function saveData() {
+            localStorage.setItem('neo_ledger_data', JSON.stringify(transactions));
+        }
+
+        function resetFilters() {
+            document.getElementById('filterCategory').value = 'ALL';
+            document.getElementById('filterType').value = 'ALL';
+            document.getElementById('searchInput').value = '';
+            render();
+        }
+
+        function formatIDR(num) {
+            return 'Rp ' + num.toLocaleString('id-ID');
+        }
+
+        function formatDate(dateStr) {
+            const opts = { day: 'numeric', month: 'short', year: 'numeric' };
+            return new Date(dateStr).toLocaleDateString('id-ID', opts);
+        }
+
+        function getCategoryMeta(catName) {
+            const all = [...CATEGORIES.expense, ...CATEGORIES.income];
+            return all.find(c => c.id === catName) || { icon: 'fa-tag', color: 'bg-slate-500/20 text-slate-300 border-slate-500/30' };
+        }
+
+        function render() {
+            let totalInc = 0;
+            let totalExp = 0;
+
+            transactions.forEach(t => {
+                if (t.type === 'income') totalInc += t.amount;
+                if (t.type === 'expense') totalExp += t.amount;
+            });
+
+            const net = totalInc - totalExp;
+
+            document.getElementById('netBalance').textContent = formatIDR(net);
+            document.getElementById('totalIncome').textContent = formatIDR(totalInc);
+            document.getElementById('totalExpense').textContent = formatIDR(totalExp);
+
+            // Filter
+            const catFilter = document.getElementById('filterCategory').value;
+            const typeFilter = document.getElementById('filterType').value;
+            const query = document.getElementById('searchInput').value.toLowerCase();
+
+            const filtered = transactions.filter(t => {
+                const matchCat = (catFilter === 'ALL' || t.category === catFilter);
+                const matchType = (typeFilter === 'ALL' || t.type === typeFilter);
+                const matchSearch = t.note.toLowerCase().includes(query) || t.category.toLowerCase().includes(query);
+                return matchCat && matchType && matchSearch;
+            });
+
+            // Tabel
+            const tbody = document.getElementById('transTableBody');
+            const emptyState = document.getElementById('emptyTableState');
+
+            tbody.innerHTML = '';
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+
+                filtered.forEach(t => {
+                    const meta = getCategoryMeta(t.category);
+                    const isInc = t.type === 'income';
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-900/60 transition-colors";
+
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 text-slate-400 font-mono text-[11px] whitespace-nowrap">${formatDate(t.date)}</td>
+                        <td class="py-3 px-4 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border ${meta.color}">
+                                <i class="fa-solid ${meta.icon}"></i> ${t.category}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 font-medium text-slate-200">${t.note}</td>
+                        <td class="py-3 px-4 text-right font-bold font-mono whitespace-nowrap ${isInc ? 'text-emerald-400' : 'text-slate-100'}">
+                            ${isInc ? '+' : '-'} ${formatIDR(t.amount)}
+                        </td>
+                        <td class="py-3 px-4 text-center whitespace-nowrap">
+                            <button onclick="deleteTrans(${t.id})" class="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all" title="Hapus">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            renderChart();
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('neoChart').getContext('2d');
+            const noDataEl = document.getElementById('noChartData');
+
+            const expenses = transactions.filter(t => t.type === 'expense');
+
+            if (expenses.length === 0) {
+                if (neoChart) neoChart.destroy();
+                noDataEl.classList.remove('hidden');
+                return;
+            }
+
+            noDataEl.classList.add('hidden');
+
+            const categoryTotals = {};
+            expenses.forEach(t => {
+                categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
+            });
+
+            const labels = Object.keys(categoryTotals);
+            const data = Object.values(categoryTotals);
+
+            const bluePalette = [
+                '#38bdf8', '#818cf8', '#0284c7', '#6366f1', 
+                '#3b82f6', '#0284c7', '#f43f5e', '#a855f7'
+            ];
+
+            if (neoChart) {
+                neoChart.destroy();
+            }
+
+            neoChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: bluePalette.slice(0, labels.length),
+                        borderWidth: 2,
+                        borderColor: '#0a192f',
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#94a3b8',
+                                font: { family: 'Plus Jakarta Sans', size: 11 },
+                                usePointStyle: true,
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.label}: ${formatIDR(context.raw)}`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '72%'
+                }
+            });
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            let bg = 'bg-slate-900 text-white border-sky-500/30';
+            if (type === 'success') bg = 'bg-sky-950 text-sky-200 border-sky-400/40';
+            if (type === 'error') bg = 'bg-rose-950 text-rose-200 border-rose-400/40';
+
+            toast.className = `${bg} border px-4 py-3 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0 neo-glow`;
+            toast.innerHTML = `
+                <i class="fa-solid ${type === 'success' ? 'fa-circle-check text-sky-400' : type === 'error' ? 'fa-circle-exclamation text-rose-400' : 'fa-circle-info text-blue-400'}"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function exportData() {
+            if (transactions.length === 0) {
+                showToast('Belum ada data untuk diunduh', 'error');
+                return;
+            }
+
+            let csv = "ID,Tanggal,Jenis,Kategori,Keterangan,Nominal\n";
+            transactions.forEach(t => {
+                csv += `"${t.id}","${t.date}","${t.type}","${t.category}","${t.note.replace(/"/g, '""')}","${t.amount}"\n`;
+            });
+
+            const link = document.createElement("a");
+            link.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+            link.download = `NeoLedger_Jeno_Rekapan_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('Berhasil mengunduh file CSV!', 'success');
+        }
+    </script>
+</body>
+</html>
+</html>
